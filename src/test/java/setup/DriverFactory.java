@@ -16,7 +16,8 @@ public class DriverFactory {
 
     private static WebDriver driver;
 
-    private static final String CHROME_DRIVER_PATH = "src/test/java/resources/driver/chromedriver.exe";
+    private static final String CHROME_DRIVER_PATH_WINDOWS = "src/test/java/resources/driver/windows/chromedriver.exe";
+    private static final String CHROME_DRIVER_PATH_MACOS = "src/test/java/resources/driver/macOs/chromedriver";
 
     private static final int IMPLICIT_WAIT = 20;
     private static final int PAGE_LOAD_TIMEOUT = 20;
@@ -29,9 +30,21 @@ public class DriverFactory {
                 driver = new FirefoxDriver();
                 break;
             }
-            case CHROME: {
-                System.setProperty("webdriver.chrome.driver", CHROME_DRIVER_PATH);
+            case CHROME_WINDOWS: {
+                System.setProperty("webdriver.chrome.driver", CHROME_DRIVER_PATH_WINDOWS);
                 caps = setChromeCapabilitiesForWindows();
+                caps.setCapability(CapabilityType.UNEXPECTED_ALERT_BEHAVIOUR, UnexpectedAlertBehaviour.IGNORE);
+                caps.setCapability(CapabilityType.ForSeleniumServer.ENSURING_CLEAN_SESSION, true);
+                ChromeOptions opt = new ChromeOptions();
+                opt.addArguments("disable-blink-features=BlockCredentialedSubresources");
+                caps.setCapability(ChromeOptions.CAPABILITY, opt);
+                driver = new ChromeDriver(caps);
+                System.out.println("Browser: " + type.name());
+                break;
+            }
+            case CHROME_MAC: {
+                System.setProperty("webdriver.chrome.driver", CHROME_DRIVER_PATH_MACOS);
+                caps = setChromeCapabilitiesForMacOs();
                 caps.setCapability(CapabilityType.UNEXPECTED_ALERT_BEHAVIOUR, UnexpectedAlertBehaviour.IGNORE);
                 caps.setCapability(CapabilityType.ForSeleniumServer.ENSURING_CLEAN_SESSION, true);
                 ChromeOptions opt = new ChromeOptions();
@@ -58,13 +71,6 @@ public class DriverFactory {
         return driver;
     }
 
-    public static WebDriver getChromeInstance() {
-        System.setProperty("webdriver.chrome.driver", CHROME_DRIVER_PATH);
-        driver = new ChromeDriver();
-        prepareTimeouts();
-        return driver;
-    }
-
     private static void prepareTimeouts() {
         driver.manage().timeouts().implicitlyWait(IMPLICIT_WAIT, TimeUnit.SECONDS);
         driver.manage().timeouts().pageLoadTimeout(PAGE_LOAD_TIMEOUT, TimeUnit.SECONDS);
@@ -72,7 +78,14 @@ public class DriverFactory {
     }
 
     private static DesiredCapabilities setChromeCapabilitiesForWindows() {
-        System.setProperty("webdriver.chrome.driver", CHROME_DRIVER_PATH);
+        System.setProperty("webdriver.chrome.driver", CHROME_DRIVER_PATH_WINDOWS);
+        DesiredCapabilities capabilities = DesiredCapabilities.chrome();
+        capabilities = setCommonCapabilities(capabilities);
+        return capabilities;
+    }
+
+    private static DesiredCapabilities setChromeCapabilitiesForMacOs() {
+        System.setProperty("webdriver.chrome.driver", CHROME_DRIVER_PATH_MACOS);
         DesiredCapabilities capabilities = DesiredCapabilities.chrome();
         capabilities = setCommonCapabilities(capabilities);
         return capabilities;

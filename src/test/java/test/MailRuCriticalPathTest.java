@@ -20,7 +20,7 @@ public class MailRuCriticalPathTest {
 
     @BeforeClass(description = "Start browser and initialize pages")
     public void setUpBefore() {
-        driver = Browser.getWrappedDriver(WebDriverTypes.CHROME);
+        driver = Browser.getWrappedDriver(WebDriverTypes.CHROME_MAC);
         driver.get(BASE_URL);
         homePage = new HomePage(driver);
         inboxPage = new InboxPage(driver);
